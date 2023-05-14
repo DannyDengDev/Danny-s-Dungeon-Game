@@ -56,10 +56,25 @@ class Bandit(base_enemy):
         self.special_skill = "Trample"
         self.speed = 11
         self.base_damage = 8
-        self.health = 20
-        self.max_health = 20
+        self.health = 60
+        self.max_health = 60
         self.defense = 3
         self.exp_granted = 40
         self.gold = 50
         self.loot = [dagger_0]
+        
+class Assassin(base_enemy):
+    def __init__(self):
+        super().__init__()
+        self.allegiance = "Assassin's Guild"
+        self.name = "Trained Assassin"
+        self.special_skill = "Double Attack"
+        self.speed = 13
+        self.base_damage = 40
+        self.health =30
+        self.max_health = 30
+        self.defense = 2
+        self.exp_granted = 75
+        self.gold = 25
+        self.loot = [dagger_1]
         

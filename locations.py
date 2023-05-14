@@ -37,7 +37,7 @@ class Mountain_Range:
         self.villagers = []
         self.merchants = []
         self.guards = []
-        self.enemies = [Bear()]
+        self.enemies = [Bear(), Assassin()]
         self.description = "A treacherous, snowy mountain range with bears that have awoken from slumber, and seeks food."
         self.connecting_locations = [Grasslands, Forest]
         

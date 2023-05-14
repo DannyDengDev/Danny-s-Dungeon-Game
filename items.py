@@ -43,6 +43,13 @@ dagger_0 = {"name" : "Steel Dagger",
           "weight" : 7,
           "type": "WEAPON"}
 
+dagger_1 = {"name" : "Poison Dagger",
+          "damage" : 10,
+          "effect" : "Poison",
+          "buy price" : 350,
+          "weight" : 5,
+          "type": "WEAPON"}
+
 sword_1 = {"name": "Great Sword",
          "damage": 15,
          "buy price": 200,
