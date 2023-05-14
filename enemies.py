@@ -6,7 +6,7 @@ class base_enemy:
         self.base_damage = 10
         self.health = 50 
         self.max_health = 50
-        self.special_skill = "" 
+        self.skills = [] 
         self.speed = 10
         self.defense = 1
         self.name = ""
@@ -26,7 +26,7 @@ class Wolf(base_enemy):
         self.base_damage = 15
         self.allegiance = "Wolfs"
         self.name = "Grey Wolf"
-        self.special_skill = "Bite"
+        self.skills = ["bite"]
         self.speed = 15
         self.health = 50
         self.max_health = 50
@@ -38,7 +38,7 @@ class Bear(base_enemy):
         super().__init__()
         self.allegiance = "Bears"
         self.name = "Grizzly Bear"
-        self.special_skill = "Trample"
+        self.skills = ["trample"]
         self.speed = 12
         self.base_damage = 20
         self.health = 150
@@ -53,7 +53,7 @@ class Bandit(base_enemy):
         super().__init__()
         self.allegiance = "Thieves Guild"
         self.name = "Sloppy bandit"
-        self.special_skill = "Trample"
+        self.skills = ["mug"]
         self.speed = 11
         self.base_damage = 8
         self.health = 60
@@ -68,7 +68,7 @@ class Assassin(base_enemy):
         super().__init__()
         self.allegiance = "Assassin's Guild"
         self.name = "Trained Assassin"
-        self.special_skill = "Double Attack"
+        self.skills = ["double attack"]
         self.speed = 13
         self.base_damage = 40
         self.health =30

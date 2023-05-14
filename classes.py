@@ -1,3 +1,5 @@
+import skills 
+
 class base_class:
     def __init__(self):
         self.current_level = 1
@@ -55,6 +57,21 @@ class base_class:
         self.base_damage += 2
         self.health = self.max_health
 
+    def gain_hp(self, hp_amount):
+        hp_before = self.health
+        self.health += hp_amount
+        if self.health > self.max_health: 
+            self.health = self.max_health
+        hp_after = self.health
+        hp_diff = hp_after - hp_before
+        print("Regained " + str(hp_diff) + " HP")
+
+    def print_skills(self):
+        print("\n\nYour skills are: ")
+        skill_index = 1
+        for skill in self.skills:
+            print(str(skill_index) + ".  " + str(skill))
+            skill_index += 1
 
 
 
@@ -66,14 +83,14 @@ class Scout(base_class):
         self.base_damage = 20
         self.max_health = 80 
         self.health = 80
-        self.special_skill = "observe" 
+        self.skills = ["observe"]
         self.speed = 15
         self.defense = 0
 
     def print_stats(self):
         print("Base damage: " + str(self.base_damage))
         print("Health: " + str(self.health))        
-        print("Special skill: " + self.special_skill)
+        #print("Special skill: " + self.special_skill)
         print("Speed: " + str(self.speed))
         print("Defense: " + str(self.defense))
 
@@ -85,14 +102,14 @@ class Fighter(base_class):
         self.base_damage = 15
         self.max_health = 110 
         self.health = 110
-        self.special_skill = "parry" 
+        self.skills = [skills.parry_skill] 
         self.speed = 9
         self.defense = 0
     
     def print_stats(self):
         print("Base damage: " + str(self.base_damage))
         print("Health: " + str(self.health))        
-        print("Special skill: " + self.special_skill)
+        #print("Special skill: " + self.special_skill)
         print("Speed: " + str(self.speed))
         print("Defense: " + str(self.defense))
 
@@ -106,14 +123,14 @@ class ApprenticeMage(base_class):
         self.base_damage = 17
         self.max_health = 100
         self.health = 100
-        self.special_skill = "burst" 
+        self.skills = ["burst"]
         self.speed = 10
         self.defense = 0
         
     def print_stats(self):
         print("Base damage: " + str(self.base_damage))
         print("Health: " + str(self.health))        
-        print("Special skill: " + self.special_skill)
+        #print("Special skill: " + self.special_skill)
         print("Speed: " + str(self.speed))
         print("Defense: " + str(self.defense))
 
@@ -127,13 +144,13 @@ class Archer(base_class):
         self.base_damage = 15
         self.max_health = 90
         self.health = 90
-        self.special_skill = "true shot" 
+        self.skills = ["true shot"]
         self.speed = 12
         self.defense = 0
 
     def print_stats(self):
         print("Base damage: " + str(self.base_damage))
         print("Health: " + str(self.health))        
-        print("Special skill: " + self.special_skill)
+        #print("Special skill: " + self.special_skill)
         print("Speed: " + str(self.speed))
         print("Defense: " + str(self.defense))

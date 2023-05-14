@@ -14,16 +14,15 @@ while True:
     location_intro(current_location)
     text, current_location = location_options(current_location)
     if text == "PROFILE": 
-        print("Current level: " + str(your_class.current_level))
-        print("Current XP: " + str(your_class.current_xp))
-        print("XP to next level: " + str(your_class.xp_to_next_level))
-        print("Current HP: " + str(your_class.health) + "/" + str(your_class.max_health))
+        print("Lvl: " + str(your_class.current_level))
+        print("XP: " + str(your_class.current_xp) + " / " + str(your_class.xp_to_next_level))
+        print("HP: " + str(your_class.health) + "/" + str(your_class.max_health))
         print_inventory(INVENTORY)
     if text == "EXIT": print("EXITING GAME"); break
     if text == "REST": 
-        print("Resting... Regained " + str(your_class.max_health - your_class.health) + " HP")
+        print("Resting...")
+        your_class.gain_hp(100)
         time += 8
-        your_class.health = your_class.max_health
     else:
         time += 1
     if text == "CHECK": 

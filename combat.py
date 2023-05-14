@@ -1,5 +1,6 @@
 import math
 import random
+import skills
 from inventory import * 
 
 def speed_diff_calculator(speed1, speed2):
@@ -29,6 +30,8 @@ def enter_combat(main_character, enemies):
 
     # main combat 
     turn_index = 0
+    ally_modifiers = []
+    enemy_modifiers = []
 
     # while there is only one allegiance left (WIP)
     while len(combatants) > 1:
@@ -37,13 +40,19 @@ def enter_combat(main_character, enemies):
 
         ### ALL COMBAT HAPPENS HERE \/
         correct_turn = 1 + math.ceil(turn_index / len(combatants))
-        if current_combatant.allegiance == "Main Character": print("TURN " + str(correct_turn) + "#")
-        
+
         if current_combatant.allegiance == "Main Character":
-            display_options(main_character, combatants)
-        
+            print("TURN " + str(correct_turn) + "#")
+            modifiers = display_options(main_character, combatants, ally_modifiers)
+            if modifiers:
+                new_ally_modifiers, new_enemy_modifiers = modifiers
+                ally_modifiers.append(new_ally_modifiers)
+                enemy_modifiers.append(new_enemy_modifiers)
+
+            # if new_modifiers:
+            #     modifiers.append(new_modifiers)
         else:
-            enemy_attack(current_combatant, combatants)
+            enemy_attack(current_combatant, combatants, enemy_modifiers)
 
 
 
@@ -82,10 +91,16 @@ def targetting(main_character, combatants):
             char_index += 1
     return input("\nEnter # of target you'd like to attack: ")
 
-def item_options(main_character, combatants):
+def item_options(main_character, combatants, modifiers):
+    print_inventory(INVENTORY)
+    item_target = int(input("\nEnter # of the item you'd like to use: ")) - 1
+    item_to_use = INVENTORY[item_target]
+    if item_to_use["type"] == "FOOD":
+        main_character.gain_hp(item_to_use["hp"])
+        remove_item(INVENTORY, item_target)
     return None
 
-def attack_options(main_character, combatants):
+def attack_options(main_character, combatants, modifiers):
     target_index = int(targetting(main_character, combatants))
     target = None
     char_index = 1
@@ -99,13 +114,28 @@ def attack_options(main_character, combatants):
     
     #print_damage(main_character, target, main_character.base_damage)
     print("="*20)
-    print(main_character.name + " did " + str(main_character.base_damage) + " to " + target.name)
-    print(target.name + " HP " + str(target.health) + " => " + str(target.health - main_character.base_damage))
-    target.health -= main_character.base_damage
+
+    # modifies base damage
+    base_damage = main_character.base_damage
+    if modifiers:
+        modified_damage = base_damage
+        for modifier in modifiers:
+            modified_damage = modifier(base_damage)
+    else:
+        modified_damage = base_damage
+
+    # prints damage
+    print(main_character.name + " did " + str(modified_damage) + " to " + target.name)
+    print(target.name + " HP " + str(target.health) + " => " + str(target.health - modified_damage))
+    target.health -= modified_damage
+
+    # kills enemy and grants xp 
     if target.health <= 0:
         print(main_character.name + " defeated " + target.name)
         print(main_character.name + " gained " + str(target.exp_granted) + " XP!")
         main_character.gain_xp(target.exp_granted)
+
+        # get loot
         if len(target.loot) > 0:
             random_drop = target.loot[random.randint(0, len(target.loot) - 1)] 
             add_item_to_inventory(INVENTORY, random_drop)
@@ -116,7 +146,7 @@ def attack_options(main_character, combatants):
   
     return None
 
-def enemy_attack(enemy, combatants):
+def enemy_attack(enemy, combatants, modifiers):
     valid_combatants = []
     for _ in combatants:
         char = _[1]
@@ -133,17 +163,20 @@ def enemy_attack(enemy, combatants):
   
     return None
 
-def block_options(main_character, combatants):
+def block_options(main_character, combatants, modifiers):
     # TODO DANNY HW
     return None
 
-def ability_options(main_character, combatants):
+def ability_options(main_character, combatants, modifiers):
+    main_character.print_skills()
+    skill_target = int(input("\nEnter # of the skill you'd like to use: ")) - 1
+    skill = main_character.skills[skill_target]
+    return skill["function"]()
+
+def escape_options(main_character, combatants, modifiers):
     return None
 
-def escape_options(main_character, combatants):
-    return None
-
-def display_options(main_character, combatants):
+def display_options(main_character, combatants, modifiers):
     print("\n\nTurn options: ")
     print("1. Items")
     print("2. Attack")
@@ -152,7 +185,7 @@ def display_options(main_character, combatants):
     print("5. Escape")
     player_choice = int(input("\nEnter what # move you'd like to make?")) - 1
     all_options = [item_options, attack_options, block_options, ability_options, item_options]
-    return all_options[player_choice](main_character, combatants)
+    return all_options[player_choice](main_character, combatants, modifiers)
     # TODO Items function
     # TODO Attack function
     # TODO Block function
