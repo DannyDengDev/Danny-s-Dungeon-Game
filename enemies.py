@@ -103,3 +103,15 @@ class Guardian(base_enemy):
         self.health = 1000
         self.max_health = 1000
         self.exp_granted = 500
+
+class Yeti(base_enemy):
+    def __init__(self):
+        super().__init__()
+        self.base_damage = 15
+        self.allegiance = "None"
+        self.name = "Yeti"
+        self.skills = ["None"]
+        self.speed = 8
+        self.health = 200
+        self.max_health = 200
+        self.exp_granted = 250

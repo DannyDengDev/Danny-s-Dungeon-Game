@@ -32,6 +32,8 @@ def enter_combat(main_character, enemies):
     turn_index = 0
     ally_modifiers = []
     enemy_modifiers = []
+    ally_modifier_durations = []
+    enemy_modifier_durations = []
     # modifier_duration_queue = []
     # while there is only one allegiance left (WIP)
     while len(combatants) > 1:
@@ -39,20 +41,48 @@ def enter_combat(main_character, enemies):
         current_combatant = combatants[turn_index % len(combatants)][1]
 
         ### ALL COMBAT HAPPENS HERE \/
-        correct_turn = 1 + math.ceil(turn_index / len(combatants))
 
+        # increment turn count
+        correct_turn = 1 + math.ceil(turn_index / len(combatants))
+        
         if current_combatant.allegiance == "Main Character":
             print("TURN " + str(correct_turn) + "#")
-            modifiers = display_options(main_character, combatants, ally_modifiers)
-            if modifiers:
-                new_ally_modifiers, new_enemy_modifiers = modifiers
+            modifier = display_options(main_character, combatants, ally_modifiers)
+            if modifier:
+                new_ally_modifiers, new_enemy_modifiers = modifier["function"]()
                 ally_modifiers.append(new_ally_modifiers)
                 enemy_modifiers.append(new_enemy_modifiers)
+                ally_modifier_durations.append([new_ally_modifiers, modifier['ally_duration']])
+                enemy_modifier_durations.append([new_enemy_modifiers, modifier['enemy_duration']])
 
+                    
+            for idx in range(0, len(ally_modifier_durations)): 
+                ally_modifier_durations[idx][1] -= 1
+            ally_durations_to_remove = []
+            for idx in range(0, len(ally_modifier_durations)): 
+                if ally_modifier_durations[idx][1] == 0:
+                    ally_durations_to_remove.append(idx)
+                    ally_modifiers.remove(ally_modifier_durations[idx][0])
             # if new_modifiers:
             #     modifiers.append(new_modifiers)
         else:
             enemy_attack(current_combatant, combatants, enemy_modifiers)
+
+            # change duration of all modifiers after each round of combat
+
+            for idx in range(0, len(enemy_modifier_durations)): 
+                enemy_modifier_durations[idx][1] -= 1
+
+            # take out modifiers with 0 duration left 
+            
+            enemy_durations_to_remove = []
+
+            # for idx in ally_durations_to_remove:
+
+            for idx in range(0, len(enemy_modifier_durations)): 
+                if enemy_modifier_durations[idx][1] == 0:
+                    enemy_durations_to_remove.append(idx)
+                    enemy_modifiers.remove(enemy_modifier_durations[idx][0])
 
 
 

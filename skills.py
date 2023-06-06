@@ -29,7 +29,7 @@ parry_skill = {"name" : "parry",
            "cost" : 10,
            "cooldown" : 1,
            "function" : parry,
-           "ally_duration" : 1,
+           "ally_duration" : 2,
            "enemy_duration" : 1,
            "instant_cast" : False}
 

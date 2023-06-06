@@ -33,14 +33,23 @@ class Forest:
 
 class Mountain_Range:
     def __init__(self):
-        self.name = "The Frosty Peaks"
+        self.name = "Jagged Cliffs"
         self.villagers = []
         self.merchants = []
         self.guards = []
         self.enemies = [Bear(), Assassin()]
-        self.description = "A treacherous, snowy mountain range with bears that have awoken from slumber, and seeks food."
+        self.description = "A treacherous mountain range with bears that have awoken from slumber, and seeks food."
         self.connecting_locations = [Grasslands, Forest]
-        
+    
+class Mountain_Range:
+    def __init__(self):
+        self.name = "Frosty Peaks"
+        self.villagers = []
+        self.merchants = []
+        self.guards = []
+        self.enemies = [Yeti]
+        self.description = "Something lurks in the snow"
+        self.connecting_locations = [Mountain_Range]
         
 #all_locations = [StartTown, Grasslands, Forest]
 

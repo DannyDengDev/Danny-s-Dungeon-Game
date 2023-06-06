@@ -42,3 +42,10 @@ def travel_elsewhere(location):
 def exit_game(location):
     # exit game (SAVE PROGRESS?)
     return ("EXIT", location)
+
+#LIST of TODO
+#1. More Areas
+#2. More enemies
+#3. More abilities/skills
+#4. Refine Combat
+#5. Add Shop/merchant
