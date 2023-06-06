@@ -6,7 +6,7 @@ class StartTown:
         self.villagers = []
         self.merchants = []
         self.guards = []
-        self.enemies = []
+        self.enemies = [Protector(), Guardian()]
         self.description = "Peaceful village with a lively town center. A safe town patrolled by guards but with few merchants."
         self.connecting_locations = [Grasslands]
 

@@ -6,6 +6,8 @@ class base_class:
         self.level_increase_factor = 1.2
         self.xp_to_next_level = 100
         self.current_xp = 0
+        self.max_energy = 100
+        self.energy = 100
         self.weapon = None
         self.shield = None
         self.helemt = None
@@ -20,6 +22,14 @@ class base_class:
 
     # def calc_bonus_defense(self):
     #     self.bonus_defense = sum([x])
+
+    def change_energy(self, amount):
+        self.energy += amount
+        if self.energy >= self.max_energy:
+            self.energy = self.max_energy
+        if self.energy < 0:
+            self.energy = 0
+        
 
     
     def equip_item(self, item):
@@ -56,6 +66,8 @@ class base_class:
         self.max_health += 5 
         self.base_damage += 2
         self.health = self.max_health
+        self.max_energy += 5
+        self.energy = self.max_energy
 
     def gain_hp(self, hp_amount):
         hp_before = self.health
@@ -83,7 +95,9 @@ class Scout(base_class):
         self.base_damage = 20
         self.max_health = 80 
         self.health = 80
-        self.skills = ["observe"]
+        self.max_energy = 120
+        self.energy = 120
+        self.skills = ["first strike"]
         self.speed = 15
         self.defense = 0
 
@@ -102,6 +116,8 @@ class Fighter(base_class):
         self.base_damage = 15
         self.max_health = 110 
         self.health = 110
+        self.max_energy = 90
+        self.energy = 90
         self.skills = [skills.parry_skill] 
         self.speed = 9
         self.defense = 0
@@ -123,7 +139,9 @@ class ApprenticeMage(base_class):
         self.base_damage = 17
         self.max_health = 100
         self.health = 100
-        self.skills = ["burst"]
+        self.max_energy = 150
+        self.energy = 150
+        self.skills = [skills.burst_skill] 
         self.speed = 10
         self.defense = 0
         
@@ -144,7 +162,9 @@ class Archer(base_class):
         self.base_damage = 15
         self.max_health = 90
         self.health = 90
-        self.skills = ["true shot"]
+        self.max_energy = 100
+        self.energy = 100
+        self.skills = ["tipped arrow"]
         self.speed = 12
         self.defense = 0
 

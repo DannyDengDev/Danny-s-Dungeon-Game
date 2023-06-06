@@ -32,7 +32,7 @@ def enter_combat(main_character, enemies):
     turn_index = 0
     ally_modifiers = []
     enemy_modifiers = []
-
+    # modifier_duration_queue = []
     # while there is only one allegiance left (WIP)
     while len(combatants) > 1:
         
@@ -100,7 +100,19 @@ def item_options(main_character, combatants, modifiers):
         remove_item(INVENTORY, item_target)
     return None
 
-def attack_options(main_character, combatants, modifiers):
+def check_death(main_character, target):
+    # kills enemy and grants xp 
+    if target.health <= 0:
+        print(main_character.name + " defeated " + target.name)
+        print(main_character.name + " gained " + str(target.exp_granted) + " XP!")
+        main_character.gain_xp(target.exp_granted)
+
+        # get loot
+        if len(target.loot) > 0:
+            random_drop = target.loot[random.randint(0, len(target.loot) - 1)] 
+            add_item_to_inventory(INVENTORY, random_drop)
+
+def pick_target(main_character, combatants):
     target_index = int(targetting(main_character, combatants))
     target = None
     char_index = 1
@@ -111,12 +123,35 @@ def attack_options(main_character, combatants, modifiers):
             if char_index == target_index:
                 target = char
             char_index += 1
-    
+    return target
+
+def instant_cast(main_character, combatants, modifiers, skill):
+    target = pick_target(main_character, combatants)
+    #print_damage(main_character, target, main_character.base_damage)
+    print("="*20)
+
+    # modifies base damage
+    base_damage = skill['damage']
+    modified_damage = base_damage + main_character.current_level * skill['level_scaling']
+
+    # prints damage
+    print(main_character.name + " used " + skill['name'] + " on " + target.name)
+    print(main_character.name + " did " + str(modified_damage) + " to " + target.name)
+    print(target.name + " HP " + str(target.health) + " => " + str(target.health - modified_damage))
+    target.health -= modified_damage
+
+    check_death(main_character, target)
+    return None
+
+def attack_options(main_character, combatants, modifiers):
+
+    target = pick_target(main_character, combatants)
     #print_damage(main_character, target, main_character.base_damage)
     print("="*20)
 
     # modifies base damage
     base_damage = main_character.base_damage
+    print(modifiers)
     if modifiers:
         modified_damage = base_damage
         for modifier in modifiers:
@@ -129,16 +164,8 @@ def attack_options(main_character, combatants, modifiers):
     print(target.name + " HP " + str(target.health) + " => " + str(target.health - modified_damage))
     target.health -= modified_damage
 
-    # kills enemy and grants xp 
-    if target.health <= 0:
-        print(main_character.name + " defeated " + target.name)
-        print(main_character.name + " gained " + str(target.exp_granted) + " XP!")
-        main_character.gain_xp(target.exp_granted)
+    check_death(main_character, target)
 
-        # get loot
-        if len(target.loot) > 0:
-            random_drop = target.loot[random.randint(0, len(target.loot) - 1)] 
-            add_item_to_inventory(INVENTORY, random_drop)
 
     # your character did X base damage to other character
     # your character did X additional damage to other character
@@ -157,9 +184,15 @@ def enemy_attack(enemy, combatants, modifiers):
     target_index = random.randint(0, len(valid_combatants) - 1)
     target = valid_combatants[target_index]
     print("="*20)
-    print(enemy.name + " did " + str(enemy.base_damage) + " to " + target.name)
-    print(target.name + " HP " + str(target.health) + " => " + str(target.health - enemy.base_damage))
-    target.health -= enemy.base_damage
+    modified_damage = enemy.base_damage
+    if modifiers:
+        for modifier in modifiers:
+            modified_damage = modifier(modified_damage)
+    else:
+        modified_damage = enemy.base_damage
+    print(enemy.name + " did " + str(modified_damage) + " to " + target.name)
+    print(target.name + " HP " + str(target.health) + " => " + str(target.health - modified_damage))
+    target.health -= modified_damage
   
     return None
 
@@ -168,23 +201,51 @@ def block_options(main_character, combatants, modifiers):
     return None
 
 def ability_options(main_character, combatants, modifiers):
+    
+    # print out skills
     main_character.print_skills()
+
+    ## ask player to select what # skill they want to use
     skill_target = int(input("\nEnter # of the skill you'd like to use: ")) - 1
+    
+    # get skill object from character
     skill = main_character.skills[skill_target]
-    return skill["function"]()
+
+    # check energy cost
+    if main_character.energy < skill['cost']:
+        print('You do not have enough energy.' + skill['name'] + ' costs ' + str(skill['cost']) + ' energy and you have ' + str(main_character.energy) + ' energy')
+        return display_options(main_character, combatants, modifiers)
+
+    # change current energy
+    main_character.change_energy(-1 * skill["cost"])
+
+    if skill["instant_cast"]:
+        #  perform instant cast ability here 
+        return instant_cast(main_character, combatants, modifiers, skill)
+    else:
+        return skill
 
 def escape_options(main_character, combatants, modifiers):
     return None
 
+def profile_options(main_character, combatants, modifiers):
+    print("Your profile: ")
+    print("HP: " + str(main_character.health) + "/" + str(main_character.max_health))
+    print("Energy: " + str(main_character.energy) + "/" + str(main_character.max_energy))
+    print_inventory(INVENTORY)
+    return display_options(main_character, combatants, modifiers)
+    
+
 def display_options(main_character, combatants, modifiers):
-    print("\n\nTurn options: ")
+    print("\nTurn options: ")
     print("1. Items")
     print("2. Attack")
     print("3. Block")
     print("4. Use Ability")
     print("5. Escape")
+    print("6. Profile")
     player_choice = int(input("\nEnter what # move you'd like to make?")) - 1
-    all_options = [item_options, attack_options, block_options, ability_options, item_options]
+    all_options = [item_options, attack_options, block_options, ability_options, escape_options, profile_options]
     return all_options[player_choice](main_character, combatants, modifiers)
     # TODO Items function
     # TODO Attack function

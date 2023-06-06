@@ -6,6 +6,8 @@ class base_enemy:
         self.base_damage = 10
         self.health = 50 
         self.max_health = 50
+        self.max_energy = 50
+        self.energy = 50 
         self.skills = [] 
         self.speed = 10
         self.defense = 1
@@ -77,4 +79,27 @@ class Assassin(base_enemy):
         self.exp_granted = 75
         self.gold = 25
         self.loot = [dagger_1]
-        
+
+class Protector(base_enemy):
+    def __init__(self):
+        super().__init__()
+        self.base_damage = 5
+        self.allegiance = "None"
+        self.name = "Protector"
+        self.skills = ["None"]
+        self.speed = 8
+        self.health = 300
+        self.max_health = 300
+        self.exp_granted = 20
+
+class Guardian(base_enemy):
+    def __init__(self):
+        super().__init__()
+        self.base_damage = 75
+        self.allegiance = "None"
+        self.name = "Guardian"
+        self.skills = ["None"]
+        self.speed = 8
+        self.health = 1000
+        self.max_health = 1000
+        self.exp_granted = 500
