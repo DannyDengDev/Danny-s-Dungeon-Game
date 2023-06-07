@@ -97,7 +97,7 @@ class Scout(base_class):
         self.health = 80
         self.max_energy = 120
         self.energy = 120
-        self.skills = ["first strike"]
+        self.skills = [skills.first_strike_skill]
         self.speed = 15
         self.defense = 0
 

@@ -44,8 +44,8 @@ def exit_game(location):
     return ("EXIT", location)
 
 #LIST of TODO
-#1. More Areas
-#2. More enemies
-#3. More abilities/skills
+#1. More Areas - Danny HW 6/7
+#2. More enemies - Danny HW 6/8
+#3. More abilities/skills 
 #4. Refine Combat
 #5. Add Shop/merchant

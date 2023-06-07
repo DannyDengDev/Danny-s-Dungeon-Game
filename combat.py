@@ -50,11 +50,12 @@ def enter_combat(main_character, enemies):
             modifier = display_options(main_character, combatants, ally_modifiers)
             if modifier:
                 new_ally_modifiers, new_enemy_modifiers = modifier["function"]()
-                ally_modifiers.append(new_ally_modifiers)
-                enemy_modifiers.append(new_enemy_modifiers)
-                ally_modifier_durations.append([new_ally_modifiers, modifier['ally_duration']])
-                enemy_modifier_durations.append([new_enemy_modifiers, modifier['enemy_duration']])
-
+                if new_ally_modifiers: 
+                    ally_modifiers.append(new_ally_modifiers)
+                    ally_modifier_durations.append([new_ally_modifiers, modifier['ally_duration']])
+                if new_enemy_modifiers: 
+                    enemy_modifiers.append(new_enemy_modifiers)
+                    enemy_modifier_durations.append([new_enemy_modifiers, modifier['enemy_duration']])
                     
             for idx in range(0, len(ally_modifier_durations)): 
                 ally_modifier_durations[idx][1] -= 1
@@ -117,7 +118,7 @@ def targetting(main_character, combatants):
     for _ in combatants:
         char = _[1]
         if char.allegiance !="Main Character":
-            print(str(char_index) + ".  " + char.name + "    HP: " + str(char.health))
+            print(str(char_index) + ".  " + char.name + "    HP: " + str(round(char.health)))
             char_index += 1
     return input("\nEnter # of target you'd like to attack: ")
 
@@ -141,6 +142,8 @@ def check_death(main_character, target):
         if len(target.loot) > 0:
             random_drop = target.loot[random.randint(0, len(target.loot) - 1)] 
             add_item_to_inventory(INVENTORY, random_drop)
+        return True
+    return False
 
 def pick_target(main_character, combatants):
     target_index = int(targetting(main_character, combatants))
@@ -159,19 +162,21 @@ def instant_cast(main_character, combatants, modifiers, skill):
     target = pick_target(main_character, combatants)
     #print_damage(main_character, target, main_character.base_damage)
     print("="*20)
-
-    # modifies base damage
-    base_damage = skill['damage']
-    modified_damage = base_damage + main_character.current_level * skill['level_scaling']
-
-    # prints damage
     print(main_character.name + " used " + skill['name'] + " on " + target.name)
-    print(main_character.name + " did " + str(modified_damage) + " to " + target.name)
-    print(target.name + " HP " + str(target.health) + " => " + str(target.health - modified_damage))
-    target.health -= modified_damage
+    for i in range(0, skill['num_casts']):
+        # modifies base damage
+        base_damage = skill['damage']
+        if skill['incl_base']: 
+            base_damage += main_character.base_damage
+        modified_damage = base_damage + round(main_character.current_level * skill['level_scaling'])
 
-    check_death(main_character, target)
-    return None
+        # prints damage
+        print(main_character.name + " did " + str(modified_damage) + " to " + target.name)
+        print(target.name + " HP " + str(round(target.health)) + " => " + str(round(target.health - modified_damage)))
+        target.health -= modified_damage
+
+        if check_death(main_character, target): break
+    return skill
 
 def attack_options(main_character, combatants, modifiers):
 
@@ -190,8 +195,7 @@ def attack_options(main_character, combatants, modifiers):
         modified_damage = base_damage
 
     # prints damage
-    print(main_character.name + " did " + str(modified_damage) + " to " + target.name)
-    print(target.name + " HP " + str(target.health) + " => " + str(target.health - modified_damage))
+    damage_line(main_character.name, target.name, modified_damage, target.health)
     target.health -= modified_damage
 
     check_death(main_character, target)
@@ -202,6 +206,9 @@ def attack_options(main_character, combatants, modifiers):
     # other character hp 100 => 90
   
     return None
+
+def deal_damage(source, target, damage):
+    damage_line(source.name, target.name, damage, target.health)
 
 def enemy_attack(enemy, combatants, modifiers):
     valid_combatants = []
@@ -220,11 +227,14 @@ def enemy_attack(enemy, combatants, modifiers):
             modified_damage = modifier(modified_damage)
     else:
         modified_damage = enemy.base_damage
-    print(enemy.name + " did " + str(modified_damage) + " to " + target.name)
-    print(target.name + " HP " + str(target.health) + " => " + str(target.health - modified_damage))
+    damage_line(enemy.name, target.name, modified_damage, target.health)
     target.health -= modified_damage
   
     return None
+
+def damage_line(source_name, target_name, damage, target_hp):
+    print(source_name + " did " + str(damage) + " to " + target_name)
+    print(target_name + " HP " + str(round(target_hp)) + " => " + str(round(target_hp - damage)))
 
 def block_options(main_character, combatants, modifiers):
     # TODO DANNY HW
@@ -248,7 +258,6 @@ def ability_options(main_character, combatants, modifiers):
 
     # change current energy
     main_character.change_energy(-1 * skill["cost"])
-
     if skill["instant_cast"]:
         #  perform instant cast ability here 
         return instant_cast(main_character, combatants, modifiers, skill)
@@ -260,7 +269,7 @@ def escape_options(main_character, combatants, modifiers):
 
 def profile_options(main_character, combatants, modifiers):
     print("Your profile: ")
-    print("HP: " + str(main_character.health) + "/" + str(main_character.max_health))
+    print("HP: " + str(round(main_character.health)) + "/" + str(round(main_character.max_health)))
     print("Energy: " + str(main_character.energy) + "/" + str(main_character.max_energy))
     print_inventory(INVENTORY)
     return display_options(main_character, combatants, modifiers)
