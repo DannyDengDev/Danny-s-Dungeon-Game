@@ -6,6 +6,7 @@ def equip_item(items, player):
     item_number = min(int(input("\nWhich item number would you like to equip?\n")) - 1, len(INVENTORY) - 1)
     
     remove_item(items, item_number)
+    player.equip_item(items[item_number])
 
 def add_item_to_inventory(items, new_item):
     potential_new_weight = calculate_weight(INVENTORY) + new_item["weight"] 
@@ -29,10 +30,9 @@ def calculate_weight(items):
     return total_weight
 
 
-def remove_item(items, item_number):
-    item_to_be_deleted = items[item_number]
-    del items[item_number]
-    print(item_to_be_deleted["name"] + " has been removed")
+def remove_item(items, item):
+    items.remove(item)
+    print(item["name"] + " has been removed from inventory")
 
 
 def sell_item(items):

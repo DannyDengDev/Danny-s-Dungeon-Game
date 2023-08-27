@@ -38,7 +38,7 @@ mace_0 = {"name" : "Wooden Club",
           "type": "WEAPON"}
 
 dagger_0 = {"name" : "Steel Dagger",
-          "damage" : 10,
+          "damage" : 5,
           "buy price" : 300,
           "weight" : 7,
           "type": "WEAPON"}

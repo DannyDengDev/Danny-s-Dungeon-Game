@@ -11,7 +11,7 @@ def check_and_remove_dead_enemies(combatants):
     # combatants = [(speed, main character), (speed, wolf), (speed, bear), etc...]
     dead_combatants = []
     for i in range(0, len(combatants)):
-        char = combatants[i][1]
+        char = combatants[i]
         if char.health <= 0:
             dead_combatants.append(i)
     for j in dead_combatants:
@@ -21,11 +21,14 @@ def enter_combat(main_character, enemies):
     print()
     print("\/"*20)
     for enemy in enemies: 
-        print("Started combat with " + enemy.name)
+        print("Started combat with " + str(enemy))
     print("/\\"*20)
     print()
-    combatants = [(random.randint(1, main_character.speed), main_character)] + [(random.randint(0, enemy.speed), enemy) for enemy in enemies]
-    #combatants.sort(key=reverse=True)
+    combatants = [main_character]
+    [combatants.append(enemy) for enemy in enemies]
+    def get_speed(x):
+        return x.speed
+    combatants.sort(key=get_speed, reverse=True)
 
 
     # main combat 
@@ -38,7 +41,7 @@ def enter_combat(main_character, enemies):
     # while there is only one allegiance left (WIP)
     while len(combatants) > 1:
         
-        current_combatant = combatants[turn_index % len(combatants)][1]
+        current_combatant = combatants[turn_index % len(combatants)]
 
         ### ALL COMBAT HAPPENS HERE \/
 
@@ -46,16 +49,23 @@ def enter_combat(main_character, enemies):
         correct_turn = 1 + math.ceil(turn_index / len(combatants))
         
         if current_combatant.allegiance == "Main Character":
-            print("TURN " + str(correct_turn) + "#")
+            print("TURN: " + str(correct_turn))
             modifier = display_options(main_character, combatants, ally_modifiers)
-            if modifier:
-                new_ally_modifiers, new_enemy_modifiers = modifier["function"]()
-                if new_ally_modifiers: 
-                    ally_modifiers.append(new_ally_modifiers)
-                    ally_modifier_durations.append([new_ally_modifiers, modifier['ally_duration']])
-                if new_enemy_modifiers: 
-                    enemy_modifiers.append(new_enemy_modifiers)
-                    enemy_modifier_durations.append([new_enemy_modifiers, modifier['enemy_duration']])
+            if type(modifier) is str:
+                if modifier is "ESCAPE TRUE":
+                    print(main_character.name + " was able to escape!")
+                    return True
+                else:
+                    print(main_character.name + " could not escape!")
+            else: 
+                if modifier:
+                    new_ally_modifiers, new_enemy_modifiers = modifier["function"]()
+                    if new_ally_modifiers: 
+                        ally_modifiers.append(new_ally_modifiers)
+                        ally_modifier_durations.append([new_ally_modifiers, modifier['ally_duration']])
+                    if new_enemy_modifiers: 
+                        enemy_modifiers.append(new_enemy_modifiers)
+                        enemy_modifier_durations.append([new_enemy_modifiers, modifier['enemy_duration']])
                     
             for idx in range(0, len(ally_modifier_durations)): 
                 ally_modifier_durations[idx][1] -= 1
@@ -67,7 +77,7 @@ def enter_combat(main_character, enemies):
             # if new_modifiers:
             #     modifiers.append(new_modifiers)
         else:
-            enemy_attack(current_combatant, combatants, enemy_modifiers)
+            enemy_attack(current_combatant, combatants, main_character, enemy_modifiers)
 
             # change duration of all modifiers after each round of combat
 
@@ -93,8 +103,8 @@ def enter_combat(main_character, enemies):
         turn_index += 1
         
     # AFTER COMBAT \/    
-    print(combatants[0][1].name + " WAS VICTORIOUS!!!")
-    victory = main_character.name == combatants[0][1].name
+    print(combatants[0].name + " WAS VICTORIOUS!!!")
+    victory = main_character.name == combatants[0].name
     return victory
 
     
@@ -115,8 +125,7 @@ def enter_combat(main_character, enemies):
 def targetting(main_character, combatants):
     print("\n\nTarget options are: ")
     char_index = 1
-    for _ in combatants:
-        char = _[1]
+    for char in combatants:
         if char.allegiance !="Main Character":
             print(str(char_index) + ".  " + char.name + "    HP: " + str(round(char.health)))
             char_index += 1
@@ -124,12 +133,15 @@ def targetting(main_character, combatants):
 
 def item_options(main_character, combatants, modifiers):
     print_inventory(INVENTORY)
-    item_target = int(input("\nEnter # of the item you'd like to use: ")) - 1
+    item_target = int(input("\nEnter # of the item you'd like to use/equip: ")) - 1
     item_to_use = INVENTORY[item_target]
     if item_to_use["type"] == "FOOD":
         main_character.gain_hp(item_to_use["hp"])
-        remove_item(INVENTORY, item_target)
-    return None
+        remove_item(INVENTORY, item_to_use)
+    if item_to_use["type"] == "WEAPON":
+        main_character.equip_item(item_to_use, INVENTORY)
+        remove_item(INVENTORY, item_to_use)
+    return display_options(main_character, combatants, modifiers)
 
 def check_death(main_character, target):
     # kills enemy and grants xp 
@@ -149,14 +161,21 @@ def pick_target(main_character, combatants):
     target_index = int(targetting(main_character, combatants))
     target = None
     char_index = 1
-    for _ in combatants:
-        char = _[1]
+    for char in combatants:
         #print(char)
         if char.allegiance != "Main Character":
             if char_index == target_index:
                 target = char
             char_index += 1
     return target
+
+def apply_dot(source, target, damage, duration, origin):
+    target.statuses.append({
+        "type" : "dot",
+        "damage" : damage,
+        "duration" : duration,
+        "origin" : origin
+    })
 
 def instant_cast(main_character, combatants, modifiers, skill):
     target = pick_target(main_character, combatants)
@@ -176,6 +195,10 @@ def instant_cast(main_character, combatants, modifiers, skill):
         target.health -= modified_damage
 
         if check_death(main_character, target): break
+    if skill['dot']:
+        dot_damage = skill['damage'] + round(main_character.current_level * skill['level_scaling'])
+        apply_dot(main_character, target, dot_damage, skill['enemy_duration'], skill['name'])
+        return skill
     return skill
 
 def attack_options(main_character, combatants, modifiers):
@@ -185,7 +208,7 @@ def attack_options(main_character, combatants, modifiers):
     print("="*20)
 
     # modifies base damage
-    base_damage = main_character.base_damage
+    base_damage = main_character.base_damage + main_character.bonus_damage
     print(modifiers)
     if modifiers:
         modified_damage = base_damage
@@ -195,10 +218,7 @@ def attack_options(main_character, combatants, modifiers):
         modified_damage = base_damage
 
     # prints damage
-    damage_line(main_character.name, target.name, modified_damage, target.health)
-    target.health -= modified_damage
-
-    check_death(main_character, target)
+    deal_damage(main_character, target, modified_damage)
 
 
     # your character did X base damage to other character
@@ -209,11 +229,20 @@ def attack_options(main_character, combatants, modifiers):
 
 def deal_damage(source, target, damage):
     damage_line(source.name, target.name, damage, target.health)
+    target.health -= damage
+    return check_death(source, target)
 
-def enemy_attack(enemy, combatants, modifiers):
+def enemy_attack(enemy, combatants, main_character, modifiers):
+    for status in enemy.statuses: 
+        if status['type'] is 'dot':
+            if status['duration'] == 0:
+                enemy.statuses.remove(status)
+            else:
+                print(enemy + " is affected by " + status["origin"] + " for " + str(status['duration']) + " more turns.")
+                if deal_damage(main_character, enemy, status["damage"]): return None
+                status['duration'] -= 1
     valid_combatants = []
-    for _ in combatants:
-        char = _[1]
+    for char in combatants:
         #print(char)
         if char.allegiance is not enemy.allegiance:
             valid_combatants.append(char)
@@ -227,13 +256,13 @@ def enemy_attack(enemy, combatants, modifiers):
             modified_damage = modifier(modified_damage)
     else:
         modified_damage = enemy.base_damage
-    damage_line(enemy.name, target.name, modified_damage, target.health)
+    damage_line(enemy, target.name, modified_damage, target.health)
     target.health -= modified_damage
   
     return None
 
 def damage_line(source_name, target_name, damage, target_hp):
-    print(source_name + " did " + str(damage) + " to " + target_name)
+    print(str(source_name) + " did " + str(damage) + " to " + str(target_name))
     print(target_name + " HP " + str(round(target_hp)) + " => " + str(round(target_hp - damage)))
 
 def block_options(main_character, combatants, modifiers):
@@ -265,13 +294,25 @@ def ability_options(main_character, combatants, modifiers):
         return skill
 
 def escape_options(main_character, combatants, modifiers):
-    return None
+    for enemy in combatants: 
+        if main_character.speed < enemy.speed:
+            return "ESCAPE_FALSE"
+    return "ESCAPE_TRUE"
 
 def profile_options(main_character, combatants, modifiers):
     print("Your profile: ")
     print("HP: " + str(round(main_character.health)) + "/" + str(round(main_character.max_health)))
     print("Energy: " + str(main_character.energy) + "/" + str(main_character.max_energy))
+    print("Base Damage: " + str(main_character.base_damage))
+    print("Bonus Damage: " + str(main_character.bonus_damage))
+    print("Base Defense: " + str(main_character.defense))
+    print("Bonus Defense: " + str(main_character.bonus_defense))
+    
+    print("Lvl: " + str(main_character.current_level))
+    print("XP: " + str(main_character.current_xp) + "/" + str(main_character.xp_to_next_level))
     print_inventory(INVENTORY)
+    main_character.print_gear()
+    if combatants is None and modifiers is None: return None
     return display_options(main_character, combatants, modifiers)
     
 
@@ -279,12 +320,12 @@ def display_options(main_character, combatants, modifiers):
     print("\nTurn options: ")
     print("1. Items")
     print("2. Attack")
-    print("3. Block")
-    print("4. Use Ability")
-    print("5. Escape")
-    print("6. Profile")
+    #print("3. Block")
+    print("3. Use Ability")
+    print("4. Escape")
+    print("5. Profile")
     player_choice = int(input("\nEnter what # move you'd like to make?")) - 1
-    all_options = [item_options, attack_options, block_options, ability_options, escape_options, profile_options]
+    all_options = [item_options, attack_options, ability_options, escape_options, profile_options]
     return all_options[player_choice](main_character, combatants, modifiers)
     # TODO Items function
     # TODO Attack function

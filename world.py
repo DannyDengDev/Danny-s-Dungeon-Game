@@ -49,3 +49,5 @@ def exit_game(location):
 #3. More abilities/skills 
 #4. Refine Combat
 #5. Add Shop/merchant
+#6. Reward for checking surrounding
+#7. Ability to choose to enter area(Loot or enemy)
